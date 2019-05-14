@@ -14,6 +14,7 @@ namespace ConsoleApplication4
         private List<AgentAction> _actionsList;
         private List<AgentReward> _rewardsList; 
         public AgentState _currentState;
+        public int totalReward = 0;
 
         private int _id;
         public int Id
@@ -67,85 +68,41 @@ namespace ConsoleApplication4
         public Agent(int id)
         {
             _id = id;
-            //_rewards = generateRandomRewards();
         }
 
-        //public AgentReward doAction(string opponentState)
-        //{
-        //    Random r = new Random();
-        //    double random = r.NextDouble();
-        //    double cumulative = 0.0;
+        public void doRandomAction(GameState gameState, bool logsEnabled)
+        {
+            var avaliableActions = _actionsList.FindAll(x => x.currentState == _currentState).FindAll(y => y.gameState == gameState);
+            var avaliableActionsRewards = new List<AgentReward>();
+            foreach(AgentAction act in avaliableActions)
+            {
+                avaliableActionsRewards.Add(_rewardsList.Find(x => x.action == act));
+            }
 
-        //    var avaliableActions = _probability.FindAll(x => x.agentState == _currentState).FindAll(y => y.opponentState == opponentState);
-        //    avaliableActions.Sort((x, y) => x.probability.CompareTo(y.probability));
-        //    if (Game.logsEnabled)
-        //    {
-        //        string json = JsonConvert.SerializeObject(avaliableActions, Formatting.Indented);
-        //        Console.WriteLine("Avaliable actions for Agent " + Id);
-        //        Console.WriteLine(json);
-        //    }
-        //    AgentReward reward = null;
-        //    foreach(AgentProbability prob in avaliableActions)
-        //    {
-        //        cumulative += prob.probability;
-        //        if(random < cumulative)
-        //        {
-        //            reward = _rewards.FindAll(x => x.agentState == prob.agentState).FindLast(y => y.agentAction == prob.agentAction);
-        //            break;
-        //        }
-        //    }
+            avaliableActionsRewards.Sort((x, y) => x.probability.CompareTo(y.probability));
 
-        //    return reward;
-        //}
+            var totalProbForAvail = avaliableActionsRewards.Sum(x => x.probability);
 
-        //public List<AgentProbability> generateRandomProbability(List<agentStates> opponentStates)
-        //{
-        //    var result = new List<AgentProbability>();
-        //    Random r = new Random();
-        //    foreach (agentStates agentState in _statesList)
-        //    {
-        //        foreach (agentStates oppState in opponentStates)
-        //        {
-        //            foreach (agentActions agentAcction in _actionsList)
-        //            {
-        //                double randomProbability = r.NextDouble();
-        //                AgentProbability prob = new AgentProbability(agentState, oppState, agentAcction, randomProbability);
-        //                result.Add(prob);
-        //            }
-        //        }
-        //    }
-        //    if (Game.logsEnabled)
-        //    {
-        //        string json = JsonConvert.SerializeObject(result, Formatting.Indented);
-        //        Console.WriteLine("Probability matrix for Agent " + Id);
-        //        Console.WriteLine(json);
-        //    }
 
-        //    return result;
-        //}
+            double random = Game.getRandomNumber(0, totalProbForAvail);
+            double cumulative = 0.0;
 
-        //private List<AgentReward> generateRandomRewards()
-        //{
-        //    var result = new List<AgentReward>();
-        //    Random r = new Random();
-        //    foreach (agentStates state in _statesList)
-        //    {
-        //        foreach (agentActions action in _actionsList)
-        //        {
-        //            int rInt = r.Next(-10, 10);
-        //            AgentReward reward = new AgentReward(state, action, rInt);
-        //            result.Add(reward);
-        //        }
+            AgentReward reward = null;
+            foreach (AgentReward prob in avaliableActionsRewards)
+            {
+                cumulative += prob.probability;
+                if (random < cumulative)
+                {
+                    reward = prob;
+                    break;
+                }
+            }
 
-        //    }
-        //    if (Game.logsEnabled)
-        //    {
-        //        string json = JsonConvert.SerializeObject(result, Formatting.Indented);
-        //        Console.WriteLine("Rewards matrix for Agent " + Id);
-        //        Console.WriteLine(json);
-        //    }
-        //    return result;
-        //}
+            _currentState = reward.action.nextState;
+            totalReward += reward.reward;
+
+            //Console.WriteLine(this.ToString() + "-" + reward.action + ";total" + totalReward );
+        }
 
         public override string ToString()
         {

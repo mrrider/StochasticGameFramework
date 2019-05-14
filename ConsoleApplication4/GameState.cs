@@ -49,7 +49,7 @@ namespace ConsoleApplication4
                 res += curr.Key.ToString() + curr.Value.ToString() + ";";
             }
 
-            return _gameState + " - " + res;
+            return _gameState + "-"+ res;
         }
     }
 }

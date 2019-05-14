@@ -79,7 +79,7 @@ namespace ConsoleApplication4
 
         public override string ToString()
         {
-            return "ACT" + _id + " " + _action + ";" + currentState.state + ">" + nextState.state + " - " + _gameState.ToString();
+            return "ACT" + _id + "-" + currentState.ToString() + ">" + nextState.ToString() + " :" + _gameState.ToString();
         }
     }
 }

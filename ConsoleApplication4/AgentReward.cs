@@ -52,7 +52,7 @@ namespace ConsoleApplication4
 
         public override string ToString()
         {
-            return "REWARD FOR ACTION: " + _action.action + " IS " + _reward + " WITH PROB " + _probability + "; " + action.ToString();
+            return "REWARD " + _action.action + " - " + _reward + " PROB " + _probability;
         }
     }
 }

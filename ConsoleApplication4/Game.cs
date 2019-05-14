@@ -8,8 +8,9 @@ namespace ConsoleApplication4
 {
     public class Game
     {
+        #region PrivateVariables
+
         private List<Agent> _agents;
-        public List<AgentAction> allActions;
         private bool _logsEnabled;
         private int _numberOfAgents;
         private int _numberOfTurns;
@@ -18,10 +19,15 @@ namespace ConsoleApplication4
         private List<GameState> _gameStates = new List<GameState>();
         private Random r = new Random();
 
+        #endregion
+
+        #region Constructors
         public Game()
         {
             _agents = new List<Agent>();
         }
+
+        #endregion
 
         #region DataGeneration
         private void generateAgentsAndStates()
@@ -39,7 +45,7 @@ namespace ConsoleApplication4
                 agent.statesList = agentStates;
                 _agents.Add(agent);
             }
-            
+
         }
 
         private void logAgentsAndStates()
@@ -50,7 +56,7 @@ namespace ConsoleApplication4
                 {
                     Console.WriteLine(agent.ToString() + " has states: ");
                     foreach (AgentState state in agent.statesList)
-                        Console.WriteLine("\t" + agent.ToString() +  state.ToString());
+                        Console.WriteLine("\t" + agent.ToString() + state.ToString());
                 }
             }
         }
@@ -65,7 +71,7 @@ namespace ConsoleApplication4
             foreach (AgentState currentState in firstAgent.statesList)
             {
                 var otherAgents = new List<Agent>();
-                foreach(var a in _agents)
+                foreach (var a in _agents)
                 {
                     otherAgents.Add(a);
                 }
@@ -81,11 +87,11 @@ namespace ConsoleApplication4
         {
             if (agentsList.Count == 0)
                 return;
-            if(agentsList.Count == 1) //Last agent in list
+            if (agentsList.Count == 1) //Last agent in list
             {
-                foreach(AgentState lastAgentState in agentsList.FirstOrDefault().statesList)
+                foreach (AgentState lastAgentState in agentsList.FirstOrDefault().statesList)
                 {
-                    List<KeyValuePair<Agent, AgentState>>  statesBeforeAgents = new List<KeyValuePair<Agent, AgentState>>();
+                    List<KeyValuePair<Agent, AgentState>> statesBeforeAgents = new List<KeyValuePair<Agent, AgentState>>();
                     foreach (KeyValuePair<Agent, AgentState> kp in agentsStatesList)
                     {
                         statesBeforeAgents.Add(kp);
@@ -95,7 +101,7 @@ namespace ConsoleApplication4
                     GameState gameState = new GameState(statesBeforeAgents, "GST" + nextState);
                     _gameStates.Add(gameState);
                 }
-            }else
+            } else
             {
                 var currentAgent = agentsList.FirstOrDefault();
                 bool secondIteration = false;
@@ -103,7 +109,7 @@ namespace ConsoleApplication4
                 {
                     if (secondIteration)
                     {
-                        var last = agentsStatesList.LastOrDefault() ;
+                        var last = agentsStatesList.LastOrDefault();
                         agentsStatesList.Remove(last);
                     }
                     var currentKeyValuePair = new KeyValuePair<Agent, AgentState>(currentAgent, currentState);
@@ -135,34 +141,9 @@ namespace ConsoleApplication4
             return state;
         }
 
-        private void generateActions()
-        {
-            allActions = new List<AgentAction>();
-            int index = 0;
-
-            //foreach (AgentState currentstate in allStates)
-            //{
-            //    foreach (AgentState nextstate in allStates)
-            //    {
-            //        allActions.Add(new AgentAction(index, currentstate, nextstate, "ACTION" + index));
-            //        index++;
-            //    }
-            //}
-                
-        }
-
-        private void logActions()
-        {
-            if (_logsEnabled)
-            {
-                foreach (AgentAction action in allActions)
-                    Console.WriteLine(action.ToString());
-            }
-        }
-
         private void generateStartStateForAgents()
         {
-            foreach(Agent a in _agents)
+            foreach (Agent a in _agents)
             {
                 a._currentState = _currentGameState.agentsStates.Find(x => x.Key.Id == a.Id).Value;
             }
@@ -179,13 +160,13 @@ namespace ConsoleApplication4
         private void generateActionsForAgent()
         {
             int index = 0;
-            foreach(var a in _agents)
+            foreach (var a in _agents)
             {
                 var actionList = new List<AgentAction>();
-                foreach (GameState gameState in _gameStates) { 
-                    foreach(var currState in a.statesList)
+                foreach (GameState gameState in _gameStates) {
+                    foreach (var currState in a.statesList)
                     {
-                        foreach(var otherState in a.statesList)
+                        foreach (var otherState in a.statesList)
                         {
                             actionList.Add(new AgentAction(index, gameState, currState, otherState, "A" + a.Id + "ST" + index++));
                         }
@@ -210,7 +191,7 @@ namespace ConsoleApplication4
 
         private void generateRandomRewardsForAgents()
         {
-            foreach(var a in _agents)
+            foreach (var a in _agents)
             {
                 var rewardList = new List<AgentReward>();
                 double probLeft = 1;
@@ -221,7 +202,7 @@ namespace ConsoleApplication4
                     if (action.Equals(lastAction))
                     {
                         prob = probLeft;
-                    }else
+                    } else
                     {
                         prob = getRandomNumber(0, probLeft);
                     }
@@ -261,14 +242,52 @@ namespace ConsoleApplication4
             generateRandomRewardsForAgents();
             logAgentsRewards();
         }
-        
+
         #endregion
 
         public void doGame()
         {
-
+            for (int iteration = 1; iteration <= _numberOfTurns; iteration++)
+            {
+                Console.WriteLine("Turn " + iteration);
+                foreach (Agent agent in _agents)
+                {
+                    string res = "\t Agent A" + agent.Id + "is in state " + agent._currentState.ToString();
+                    agent.doRandomAction(_currentGameState, _logsEnabled);
+                    res += "; new state " + agent._currentState.ToString() + " total reward is " + agent.totalReward;
+                    Console.WriteLine(res);
+                }
+                if (!moveGameState())
+                    break;
+            }
         }
 
+        public bool moveGameState()
+        {
+            var agentStates = new List<KeyValuePair<Agent, AgentState>>();
+            foreach(Agent agent in _agents)
+            {
+                agentStates.Add(new KeyValuePair<Agent, AgentState>(agent, agent._currentState));
+            }
+            var found = false;
+            foreach (GameState gs in _gameStates)
+            {
+                found = gs.agentsStates.All(agentStates.Contains) && gs.agentsStates.Count == agentStates.Count;
+                if (found)
+                {
+                    _currentGameState = gs;
+                    Console.WriteLine("New Game State " + _currentGameState);
+                    break;
+                }
+            }
+            if (!found)
+            {
+                Console.WriteLine("ERROR");
+            }
+            return found;
+        }
+
+        #region Properties
         public List<Agent> agents
         {
             get
@@ -341,10 +360,13 @@ namespace ConsoleApplication4
             }
         }
 
+        #endregion
+
         #region Utils
-        public double getRandomNumber(double min, double max)
+        public static double getRandomNumber(double min, double max)
         {
-            return r.NextDouble() * max;
+            Random random = new Random();
+            return random.NextDouble() * max;
         }
 
         #endregion
