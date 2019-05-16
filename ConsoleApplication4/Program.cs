@@ -18,6 +18,7 @@ namespace ConsoleApplication4
             game.numberOfAgents = 2;
             game.numberOfTurns = 5;
             game.numberOfStatesPerAgent = 2;
+            game.numberOfActionsPerAgent = 2;
             game.generateDataForAgents();
             //game.doGame();
           

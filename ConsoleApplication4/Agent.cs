@@ -12,7 +12,7 @@ namespace ConsoleApplication4
     {
         private List<AgentState> _statesList;
         private List<AgentAction> _actionsList;
-        private List<AgentReward> _rewardsList; 
+        private List<AgentProb> _probList;
         public AgentState _currentState;
         public int totalReward = 0;
 
@@ -53,15 +53,15 @@ namespace ConsoleApplication4
             }
         }
 
-        public List<AgentReward> rewardsList
+        public List<AgentProb> probList
         {
             get
             {
-                return _rewardsList;
+                return _probList;
             }
             set
             {
-                _rewardsList = value;
+                _probList = value;
             }
         }
 
@@ -70,39 +70,39 @@ namespace ConsoleApplication4
             _id = id;
         }
 
-        public void doRandomAction(GameState gameState, bool logsEnabled)
-        {
-            //var avaliableActions = _actionsList.FindAll(x => x.currentState == _currentState).FindAll(y => y.gameState == gameState);
-            var avaliableActionsRewards = new List<AgentReward>();
-            //foreach(AgentAction act in avaliableActions)
-            //{
-            //    avaliableActionsRewards.Add(_rewardsList.Find(x => x.action == act));
-            //}
+        //public void doRandomAction(GameState gameState, bool logsEnabled)
+        //{
+        //    //var avaliableActions = _actionsList.FindAll(x => x.currentState == _currentState).FindAll(y => y.gameState == gameState);
+        //    var avaliableActionsRewards = new List<AgentReward>();
+        //    //foreach(AgentAction act in avaliableActions)
+        //    //{
+        //    //    avaliableActionsRewards.Add(_rewardsList.Find(x => x.action == act));
+        //    //}
 
-            avaliableActionsRewards.Sort((x, y) => x.probability.CompareTo(y.probability));
+        //    avaliableActionsRewards.Sort((x, y) => x.probability.CompareTo(y.probability));
 
-            var totalProbForAvail = avaliableActionsRewards.Sum(x => x.probability);
+        //    var totalProbForAvail = avaliableActionsRewards.Sum(x => x.probability);
 
 
-            double random = Game.getRandomNumber(0, totalProbForAvail);
-            double cumulative = 0.0;
+        //    double random = Game.getRandomNumber(0, totalProbForAvail);
+        //    double cumulative = 0.0;
 
-            AgentReward reward = null;
-            foreach (AgentReward prob in avaliableActionsRewards)
-            {
-                cumulative += prob.probability;
-                if (random < cumulative)
-                {
-                    reward = prob;
-                    break;
-                }
-            }
+        //    AgentReward reward = null;
+        //    foreach (AgentReward prob in avaliableActionsRewards)
+        //    {
+        //        cumulative += prob.probability;
+        //        if (random < cumulative)
+        //        {
+        //            reward = prob;
+        //            break;
+        //        }
+        //    }
 
-            _currentState = reward.action.nextState;
-            totalReward += reward.reward;
+        //    _currentState = reward.action.nextState;
+        //    totalReward += reward.reward;
 
-            //Console.WriteLine(this.ToString() + "-" + reward.action + ";total" + totalReward );
-        }
+        //    //Console.WriteLine(this.ToString() + "-" + reward.action + ";total" + totalReward );
+        //}
 
         public override string ToString()
         {

@@ -1,10 +1,11 @@
 ﻿
 namespace ConsoleApplication4
 {
-    public class AgentReward
+    public class AgentProb
     {
+
         private AgentAction _action;
-        private int _reward;
+        private AgentState _nextState;
         private double _probability;
 
         public AgentAction action
@@ -19,15 +20,15 @@ namespace ConsoleApplication4
             }
         }
 
-        public int reward
+        public AgentState nextState
         {
             get
             {
-                return _reward;
+                return _nextState;
             }
             set
             {
-                _reward = value;
+                _nextState = value;
             }
         }
 
@@ -43,16 +44,16 @@ namespace ConsoleApplication4
             }
         }
 
-        public AgentReward(AgentAction agentAction, int reward, double prob)
+        public AgentProb(AgentAction agentAction, AgentState nextState, double prob)
         {
             action = agentAction;
-            _reward = reward;
+            _nextState = nextState;
             _probability = prob;
         }
 
         public override string ToString()
         {
-            return "REWARD " + _action.action + " - " + _reward + " PROB " + _probability;
+            return _action.ToString() + "->" + _nextState.ToString() + ":" + _probability;
         }
     }
 }

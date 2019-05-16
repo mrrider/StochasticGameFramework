@@ -15,10 +15,12 @@ namespace ConsoleApplication4
         private int _numberOfAgents;
         private int _numberOfTurns;
         private int _numberOfStatesPerAgent;
-        private GameState _currentGameState;
-        private List<GameState> _gameStates = new List<GameState>();
+        private int _numberOfActionsPerAgent;
+        //private GameState _currentGameState;
+        //private List<GameState> _gameStates = new List<GameState>();
         private Random r = new Random();
         public List<WSum> _sums;
+        public List<Probs> _probs;
         #endregion
 
         #region Constructors
@@ -39,7 +41,7 @@ namespace ConsoleApplication4
                 List<AgentState> agentStates = new List<AgentState>();
                 for (int j = 0; j < _numberOfStatesPerAgent; j++)
                 {
-                    AgentState state = new AgentState(index, "AGENT" + i + "-STATE" + index++);
+                    AgentState state = new AgentState(index, "A" + i + "-S" + index++);
                     agentStates.Add(state);
                 }
                 agent.statesList = agentStates;
@@ -61,88 +63,88 @@ namespace ConsoleApplication4
             }
         }
 
-        private void generateGameStates()
-        {
-            var firstAgent = _agents.FirstOrDefault();
+        //private void generateGameStates()
+        //{
+        //    var firstAgent = _agents.FirstOrDefault();
 
-            foreach (AgentState currentState in firstAgent.statesList)
-            {
-                var otherAgents = new List<Agent>();
-                foreach (var a in _agents)
-                {
-                    otherAgents.Add(a);
-                }
-                otherAgents.RemoveAt(0);
-                var currentKeyValuePair = new KeyValuePair<Agent, AgentState>(firstAgent, currentState);
-                var agentsStatesList = new List<KeyValuePair<Agent, AgentState>>();
-                agentsStatesList.Add(currentKeyValuePair);
-                recourse(otherAgents, agentsStatesList);
-            }
-        }
+        //    foreach (AgentState currentState in firstAgent.statesList)
+        //    {
+        //        var otherAgents = new List<Agent>();
+        //        foreach (var a in _agents)
+        //        {
+        //            otherAgents.Add(a);
+        //        }
+        //        otherAgents.RemoveAt(0);
+        //        var currentKeyValuePair = new KeyValuePair<Agent, AgentState>(firstAgent, currentState);
+        //        var agentsStatesList = new List<KeyValuePair<Agent, AgentState>>();
+        //        agentsStatesList.Add(currentKeyValuePair);
+        //        recourse(otherAgents, agentsStatesList);
+        //    }
+        //}
 
-        private void recourse(List<Agent> agentsList, List<KeyValuePair<Agent, AgentState>> agentsStatesList)
-        {
-            if (agentsList.Count == 0)
-                return;
-            if (agentsList.Count == 1) //Last agent in list
-            {
-                foreach (AgentState lastAgentState in agentsList.FirstOrDefault().statesList)
-                {
-                    List<KeyValuePair<Agent, AgentState>> statesBeforeAgents = new List<KeyValuePair<Agent, AgentState>>();
-                    foreach (KeyValuePair<Agent, AgentState> kp in agentsStatesList)
-                    {
-                        statesBeforeAgents.Add(kp);
-                    }
-                    statesBeforeAgents.Add(new KeyValuePair<Agent, AgentState>(agentsList.FirstOrDefault(), lastAgentState));
-                    int nextState = _gameStates.Count + 1;
-                    GameState gameState = new GameState(statesBeforeAgents, "GST" + nextState);
-                    _gameStates.Add(gameState);
-                }
-            } else
-            {
-                var currentAgent = agentsList.FirstOrDefault();
-                bool secondIteration = false;
-                foreach (AgentState currentState in currentAgent.statesList)
-                {
-                    if (secondIteration)
-                    {
-                        var last = agentsStatesList.LastOrDefault();
-                        agentsStatesList.Remove(last);
-                    }
-                    var currentKeyValuePair = new KeyValuePair<Agent, AgentState>(currentAgent, currentState);
-                    agentsStatesList.Add(currentKeyValuePair);
-                    agentsList.Remove(currentAgent);
-                    recourse(agentsList, agentsStatesList);
-                    secondIteration = true;
-                }
-            }
-        }
+        //private void recourse(List<Agent> agentsList, List<KeyValuePair<Agent, AgentState>> agentsStatesList)
+        //{
+        //    if (agentsList.Count == 0)
+        //        return;
+        //    if (agentsList.Count == 1) //Last agent in list
+        //    {
+        //        foreach (AgentState lastAgentState in agentsList.FirstOrDefault().statesList)
+        //        {
+        //            List<KeyValuePair<Agent, AgentState>> statesBeforeAgents = new List<KeyValuePair<Agent, AgentState>>();
+        //            foreach (KeyValuePair<Agent, AgentState> kp in agentsStatesList)
+        //            {
+        //                statesBeforeAgents.Add(kp);
+        //            }
+        //            statesBeforeAgents.Add(new KeyValuePair<Agent, AgentState>(agentsList.FirstOrDefault(), lastAgentState));
+        //            int nextState = _gameStates.Count + 1;
+        //            GameState gameState = new GameState(statesBeforeAgents, "GST" + nextState);
+        //            _gameStates.Add(gameState);
+        //        }
+        //    } else
+        //    {
+        //        var currentAgent = agentsList.FirstOrDefault();
+        //        bool secondIteration = false;
+        //        foreach (AgentState currentState in currentAgent.statesList)
+        //        {
+        //            if (secondIteration)
+        //            {
+        //                var last = agentsStatesList.LastOrDefault();
+        //                agentsStatesList.Remove(last);
+        //            }
+        //            var currentKeyValuePair = new KeyValuePair<Agent, AgentState>(currentAgent, currentState);
+        //            agentsStatesList.Add(currentKeyValuePair);
+        //            agentsList.Remove(currentAgent);
+        //            recourse(agentsList, agentsStatesList);
+        //            secondIteration = true;
+        //        }
+        //    }
+        //}
 
-        private void logGameStates()
-        {
-            if (_logsEnabled)
-            {
+        //private void logGameStates()
+        //{
+        //    if (_logsEnabled)
+        //    {
 
-                foreach (GameState gameState in _gameStates)
-                {
-                    Console.WriteLine(gameState.ToString());
-                }
-            }
-        }
+        //        foreach (GameState gameState in _gameStates)
+        //        {
+        //            Console.WriteLine(gameState.ToString());
+        //        }
+        //    }
+        //}
 
-        public GameState getRandomStartGameState()
-        {
-            Random random = new Random();
-            var state = _gameStates[random.Next(_gameStates.Count)];
-            Console.WriteLine("Game Start State is " + state.gameState);
-            return state;
-        }
+        //public GameState getRandomStartGameState()
+        //{
+        //    Random random = new Random();
+        //    var state = _gameStates[random.Next(_gameStates.Count)];
+        //    Console.WriteLine("Game Start State is " + state.gameState);
+        //    return state;
+        //}
 
         private void generateStartStateForAgents()
         {
             foreach (Agent a in _agents)
             {
-                a._currentState = _currentGameState.agentsStates.Find(x => x.Key.Id == a.Id).Value;
+                a._currentState = a.statesList[0];
             }
         }
 
@@ -160,16 +162,12 @@ namespace ConsoleApplication4
             foreach (var a in _agents)
             {
                 var actionList = new List<AgentAction>();
-                //foreach (GameState gameState in _gameStates) {
-                foreach (var state in a.statesList)
+                for(int i = 0; i < _numberOfActionsPerAgent; i++)
                 {
-                    foreach (var otherState in a.statesList)
-                    {
-
-                        actionList.Add(new AgentAction(index, state, otherState, "A" + a.Id + "ST" + index++));
-                    }
+                    int reward = r.Next(-10, 10);
+                    actionList.Add(new AgentAction(index,  "A" + a.Id + "-ACT" + index++, reward));
                 }    
-                //}
+                
                 a.actionsList = actionList;
             }
         }
@@ -187,41 +185,51 @@ namespace ConsoleApplication4
             }
         }
 
-        private void generateRandomRewardsForAgents()
+        private void generateRandomProbsForAgents()
         {
             foreach (var a in _agents)
             {
-                var rewardList = new List<AgentReward>();
+                var probList = new List<AgentProb>();
+
                 double probLeft = 1;
+
+                var actionCount = a.actionsList.Count * a.statesList.Count;
                 var lastAction = a.actionsList.LastOrDefault();
+                var lastState = a.statesList.LastOrDefault();
+
                 foreach (var action in a.actionsList)
                 {
-                    double prob = 0;
-                    if (action.Equals(lastAction))
+                    foreach(var state in a.statesList)
                     {
-                        prob = probLeft;
-                    } else
-                    {
-                        prob = getRandomNumber(0, probLeft);
+                        double prob = 0;
+                        if (action.Equals(lastAction) && state.Equals(lastState))
+                        {
+                            prob = probLeft;
+                        }
+                        else
+                        {
+                            prob = getRandomNumber(0, probLeft / actionCount);
+                        }
+                        actionCount--;
+                        prob = Math.Round(prob, 2);
+                        AgentProb pr = new AgentProb(action, state, prob);
+                        probList.Add(pr);
+                        probLeft -= prob;
                     }
-                    int reward = r.Next(-10, 10);
-                    AgentReward rw = new AgentReward(action, reward, prob);
-                    rewardList.Add(rw);
-                    probLeft -= prob;
                 }
-                a.rewardsList = rewardList;
+                a.probList = probList;
             }
         }
 
-        private void logAgentsRewards()
+        private void logAgentsProbs()
         {
             if (_logsEnabled)
             {
                 foreach (Agent agent in _agents)
                 {
-                    Console.WriteLine(agent.ToString() + " has rewards: ");
-                    foreach (AgentReward reward in agent.rewardsList)
-                        Console.WriteLine("\t" + reward.ToString());
+                    Console.WriteLine(agent.ToString() + " has probs: ");
+                    foreach (AgentProb prob in agent.probList)
+                        Console.WriteLine("\t" + prob.ToString());
                 }
             }
         }
@@ -231,74 +239,81 @@ namespace ConsoleApplication4
             _sums = new List<WSum>();
             var firstAgent = _agents.FirstOrDefault();
 
-            foreach (AgentReward currentReward in firstAgent.rewardsList)
+            foreach (AgentState currentState in firstAgent.statesList)
             {
-                var otherAgents = new List<Agent>();
-                foreach (var a in _agents)
-                {
-                    otherAgents.Add(a);
-                }
-                otherAgents.RemoveAt(0);
 
-                var currentKeyValuePair = new KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>
-                                                    (firstAgent, new KeyValuePair<AgentAction, AgentReward>(currentReward.action, currentReward));
-                    
-                var agentsWSList = new List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>>();
-                agentsWSList.Add(currentKeyValuePair);
-                recourseForWS(otherAgents, agentsWSList);
+                foreach(AgentAction currentAction in firstAgent.actionsList)
+                {
+                    var otherAgents = new List<Agent>();
+                    foreach (var a in _agents)
+                    {
+                        otherAgents.Add(a);
+                    }
+                    otherAgents.RemoveAt(0);
+                    var currentKeyValuePair = new KeyValuePair<Agent, KeyValuePair<AgentAction, AgentState>>
+                                                    (firstAgent, new KeyValuePair<AgentAction, AgentState>(currentAction, currentState));
+                    var agentsWSList = new List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentState>>>();
+                    agentsWSList.Add(currentKeyValuePair);
+                    recourseForWS(otherAgents, agentsWSList);
+                }
             }
         }
 
-        private void recourseForWS(List<Agent> agentsList, List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>> agentsWSList)
+        private void recourseForWS(List<Agent> agentsList, List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentState>>> agentsWSList)
         {
-
             if (agentsList.Count == 0)
                 return;
             if (agentsList.Count == 1) //Last agent in list
             {
-                foreach (AgentReward lastAgentReward in agentsList.FirstOrDefault().rewardsList)
+                foreach (AgentState lastAgentState in agentsList.FirstOrDefault().statesList)
                 {
-                    var rewardsBeforeAgents = new List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>>();
-                    foreach (var kp in agentsWSList)
+                    foreach(AgentAction lastAgnetAction in agentsList.FirstOrDefault().actionsList)
                     {
-                        rewardsBeforeAgents.Add(kp);
+                        var rewardsBeforeAgents = new List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentState>>>();
+                        foreach (var kp in agentsWSList)
+                        {
+                            rewardsBeforeAgents.Add(kp);
+                        }
+
+                        var lstKeyValuePair = new KeyValuePair<Agent, KeyValuePair<AgentAction, AgentState>>
+                                                        (agentsList.FirstOrDefault(), new KeyValuePair<AgentAction, AgentState>(lastAgnetAction, lastAgentState));
+
+                        rewardsBeforeAgents.Add(lstKeyValuePair);
+                        int nextindex = _sums.Count + 1;
+
+                        int total = 0;
+                        foreach (var ws in rewardsBeforeAgents)
+                        {
+                            total += ws.Value.Key.reward;
+                        }
+
+                        WSum wsum = new WSum("WSUM" + nextindex, total, rewardsBeforeAgents);
+                        _sums.Add(wsum);
                     }
-
-                    var lstKeyValuePair = new KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>
-                                                    (agentsList.FirstOrDefault(), new KeyValuePair<AgentAction, AgentReward>(lastAgentReward.action, lastAgentReward));
-
-                    rewardsBeforeAgents.Add(lstKeyValuePair);
-                    int nextindex = _sums.Count + 1;
-
-                    int total = 0;
-                    foreach(var ws in rewardsBeforeAgents)
-                    {
-                        total+=ws.Value.Value.reward;
-                    }
-
-                    WSum wsum = new WSum("WSUM" + nextindex, total, rewardsBeforeAgents);
-                    _sums.Add(wsum);
                 }
             }
             else
             {
                 var currentAgent = agentsList.FirstOrDefault();
                 bool secondIteration = false;
-                foreach (var currentReward in currentAgent.rewardsList)
+                foreach (var currentState in currentAgent.statesList)
                 {
-                    if (secondIteration)
+                    foreach(var currentAction in currentAgent.actionsList)
                     {
-                        var last = agentsWSList.LastOrDefault();
-                        agentsWSList.Remove(last);
+                        if (secondIteration)
+                        {
+                            var last = agentsWSList.LastOrDefault();
+                            agentsWSList.Remove(last);
+                        }
+
+                        var currentKeyValuePair = new KeyValuePair<Agent, KeyValuePair<AgentAction, AgentState>>
+                                                        (currentAgent, new KeyValuePair<AgentAction, AgentState>(currentAction, currentState));
+
+                        agentsWSList.Add(currentKeyValuePair);
+                        agentsList.Remove(currentAgent);
+                        recourseForWS(agentsList, agentsWSList);
+                        secondIteration = true;
                     }
-
-                    var currentKeyValuePair = new KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>
-                                                    (currentAgent, new KeyValuePair<AgentAction, AgentReward>(currentReward.action, currentReward));
-
-                    agentsWSList.Add(currentKeyValuePair);
-                    agentsList.Remove(currentAgent);
-                    recourseForWS(agentsList, agentsWSList);
-                    secondIteration = true;
                 }
             }
         }
@@ -306,10 +321,10 @@ namespace ConsoleApplication4
         private void logWSums()
         {
             Console.WriteLine("Wsums:");
-            foreach(var sum in _sums)
+            foreach (var sum in _sums)
             {
-                string text = "\t" + sum.wSum + ": (" ;
-                foreach(var pair in sum.sumList)
+                string text = "\t" + sum.wSum + ": (";
+                foreach (var pair in sum.sumList)
                 {
                     text += "A" + pair.Key.Id + "-" + pair.Value.Key.action + ";";
                 }
@@ -318,66 +333,196 @@ namespace ConsoleApplication4
             }
         }
 
+        private void countProbs()
+        {
+            _probs = new List<Probs>();
+
+            var firstAgent = _agents.FirstOrDefault();
+
+            foreach (AgentState currentState in firstAgent.statesList)
+            {
+                foreach (AgentAction currentAction in firstAgent.actionsList)
+                {
+                    foreach (AgentState nextState in firstAgent.statesList)
+                    {
+                        var otherAgents = new List<Agent>();
+                        foreach (var a in _agents)
+                        {
+                            otherAgents.Add(a);
+                        }
+                        otherAgents.RemoveAt(0);
+                        var currentRew = firstAgent.probList.FindAll(x => x.action.action.Equals(currentAction.action))
+                                                                .Find(y => y.nextState.state.Equals(nextState.state));
+                        var currentKeyValuePair = new KeyValuePair<Agent, TransferPair>(firstAgent, new TransferPair(currentState, currentAction, nextState, currentRew.probability));
+
+                        var agentsPRList = new List<KeyValuePair<Agent, TransferPair>>();
+
+                        agentsPRList.Add(currentKeyValuePair);
+                        recourseForWS(otherAgents, agentsPRList);
+                    }
+                }
+            }
+        }
+
+        private void recourseForWS(List<Agent> agentsList, List<KeyValuePair<Agent, TransferPair>> agentsPRList)
+        {
+            if (agentsList.Count == 0)
+                return;
+            if (agentsList.Count == 1) //Last agent in list
+            {
+                foreach (AgentState lastAgentState in agentsList.FirstOrDefault().statesList)
+                {
+                    foreach (AgentAction lastAgnetAction in agentsList.FirstOrDefault().actionsList)
+                    {
+                        foreach (AgentState lastAgentNextState in agentsList.FirstOrDefault().statesList)
+                        {
+                            var rewardsBeforeAgents = new List<KeyValuePair<Agent, TransferPair>>();
+                            foreach (var kp in agentsPRList)
+                            {
+                                rewardsBeforeAgents.Add(kp);
+                            }
+                            var currentRew = agentsList.FirstOrDefault().probList.FindAll(x => x.action.action.Equals(lastAgnetAction.action))
+                                                                .Find(y => y.nextState.state.Equals(lastAgentNextState.state));
+
+                            var lstKeyValuePair = new KeyValuePair<Agent, TransferPair>(agentsList.FirstOrDefault(), 
+                                                            new TransferPair(lastAgentState, lastAgnetAction, lastAgentNextState, currentRew.probability));
+
+                            rewardsBeforeAgents.Add(lstKeyValuePair);
+                            int nextindex = _probs.Count + 1;
+
+                            double total = 0;
+                            foreach (var ws in rewardsBeforeAgents)
+                            {
+                                if (ws.Equals(rewardsBeforeAgents.FirstOrDefault()))
+                                {
+                                    total = ws.Value.prob;
+                                }else
+                                {
+                                    total *= ws.Value.prob;
+                                }
+
+                            }
+
+                            Probs probs = new Probs("ProBS" + nextindex, total, rewardsBeforeAgents);
+                            _probs.Add(probs);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var currentAgent = agentsList.FirstOrDefault();
+                bool secondIteration = false;
+                foreach (var currentState in currentAgent.statesList)
+                {
+                    foreach (var currentAction in currentAgent.actionsList)
+                    {
+                        foreach (var nextState in currentAgent.statesList)
+                        {
+                            if (secondIteration)
+                            {
+                                var last = agentsPRList.LastOrDefault();
+                                agentsPRList.Remove(last);
+                            }
+
+                            var currentRew = currentAgent.probList.FindAll(x => x.action.action.Equals(currentAction.action))
+                                                                .Find(y => y.nextState.state.Equals(nextState.state));
+
+                            var lstKeyValuePair = new KeyValuePair<Agent, TransferPair>(agentsList.FirstOrDefault(),
+                                                            new TransferPair(currentState, currentAction, nextState, currentRew.probability));
+
+
+                            agentsPRList.Add(lstKeyValuePair);
+                            agentsList.Remove(currentAgent);
+                            recourseForWS(agentsList, agentsPRList);
+                            secondIteration = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void logProbs()
+        {
+            double counter = 0;
+            Console.WriteLine("Probs:");
+            foreach (var prob in _probs)
+            {
+                string text = "\t" + prob.prob + ": (";
+                foreach (var pair in prob.agentsVector)
+                {
+                    text += "A" + pair.Key.Id + "-" + pair.Value.stateBefore + "->" + pair.Value.action + "->" + pair.Value.stateAfter + ";";
+                }
+                text += ") = " + prob.probTotal;
+                counter += prob.probTotal;
+                Console.WriteLine(text);
+            }
+            Console.WriteLine("TotalProbs = " + counter);
+        }
+
         public void generateDataForAgents()
         {
             generateAgentsAndStates();
             logAgentsAndStates();
-            generateGameStates();
-            logGameStates();
-            _currentGameState = getRandomStartGameState();
+            //generateGameStates();
+            //logGameStates();
+            //_currentGameState = getRandomStartGameState();
             generateStartStateForAgents();
             logAgentsStates();
             generateActionsForAgent();
             logAgentsActions();
-            generateRandomRewardsForAgents();
-            logAgentsRewards();
+            generateRandomProbsForAgents();
+            logAgentsProbs();
+            //GenerateAgentsRewards();
             generateWSums();
             logWSums();
+            countProbs();
+            logProbs();
         }
 
         #endregion
 
-        public void doGame()
-        {
-            for (int iteration = 1; iteration <= _numberOfTurns; iteration++)
-            {
-                Console.WriteLine("Turn " + iteration);
-                foreach (Agent agent in _agents)
-                {
-                    string res = "\t Agent A" + agent.Id + "is in state " + agent._currentState.ToString();
-                    agent.doRandomAction(_currentGameState, _logsEnabled);
-                    res += "; new state " + agent._currentState.ToString() + " total reward is " + agent.totalReward;
-                    Console.WriteLine(res);
-                }
-                if (!moveGameState())
-                    break;
-            }
-        }
+        //public void doGame()
+        //{
+        //    for (int iteration = 1; iteration <= _numberOfTurns; iteration++)
+        //    {
+        //        Console.WriteLine("Turn " + iteration);
+        //        foreach (Agent agent in _agents)
+        //        {
+        //            string res = "\t Agent A" + agent.Id + "is in state " + agent._currentState.ToString();
+        //            agent.doRandomAction(_currentGameState, _logsEnabled);
+        //            res += "; new state " + agent._currentState.ToString() + " total reward is " + agent.totalReward;
+        //            Console.WriteLine(res);
+        //        }
+        //        if (!moveGameState())
+        //            break;
+        //    }
+        //}
 
-        public bool moveGameState()
-        {
-            var agentStates = new List<KeyValuePair<Agent, AgentState>>();
-            foreach(Agent agent in _agents)
-            {
-                agentStates.Add(new KeyValuePair<Agent, AgentState>(agent, agent._currentState));
-            }
-            var found = false;
-            foreach (GameState gs in _gameStates)
-            {
-                found = gs.agentsStates.All(agentStates.Contains) && gs.agentsStates.Count == agentStates.Count;
-                if (found)
-                {
-                    _currentGameState = gs;
-                    Console.WriteLine("New Game State " + _currentGameState);
-                    break;
-                }
-            }
-            if (!found)
-            {
-                Console.WriteLine("ERROR");
-            }
-            return found;
-        }
+        //public bool moveGameState()
+        //{
+        //    var agentStates = new List<KeyValuePair<Agent, AgentState>>();
+        //    foreach(Agent agent in _agents)
+        //    {
+        //        agentStates.Add(new KeyValuePair<Agent, AgentState>(agent, agent._currentState));
+        //    }
+        //    var found = false;
+        //    foreach (GameState gs in _gameStates)
+        //    {
+        //        found = gs.agentsStates.All(agentStates.Contains) && gs.agentsStates.Count == agentStates.Count;
+        //        if (found)
+        //        {
+        //            _currentGameState = gs;
+        //            Console.WriteLine("New Game State " + _currentGameState);
+        //            break;
+        //        }
+        //    }
+        //    if (!found)
+        //    {
+        //        Console.WriteLine("ERROR");
+        //    }
+        //    return found;
+        //}
 
         #region Properties
         public List<Agent> agents
@@ -440,25 +585,37 @@ namespace ConsoleApplication4
             }
         }
 
-        public List<GameState> gameStates
+        public int numberOfActionsPerAgent
         {
             get
             {
-                return _gameStates;
+                return _numberOfActionsPerAgent;
             }
             set
             {
-                _gameStates = value;
+                _numberOfActionsPerAgent = value;
             }
         }
+
+        //public List<GameState> gameStates
+        //{
+        //    get
+        //    {
+        //        return _gameStates;
+        //    }
+        //    set
+        //    {
+        //        _gameStates = value;
+        //    }
+        //}
 
         #endregion
 
         #region Utils
-        public static double getRandomNumber(double min, double max)
+        public double getRandomNumber(double min, double max)
         {
-            Random random = new Random();
-            return random.NextDouble() * max;
+            //Random random = new Random();
+            return r.NextDouble() * max;
         }
 
         #endregion

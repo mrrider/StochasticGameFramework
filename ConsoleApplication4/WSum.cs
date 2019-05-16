@@ -8,7 +8,7 @@ namespace ConsoleApplication4
 {
     public class WSum
     {
-        public WSum(string wsum, int total, List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>> list)
+        public WSum(string wsum, int total, List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentState>>> list)
         {
             wSum = wsum;
             totalSum = total;
@@ -19,7 +19,7 @@ namespace ConsoleApplication4
 
         public int totalSum;
 
-        public List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>> sumList = new List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>>();
+        public List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentState>>> sumList = new List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentState>>>();
 
         public override string ToString()
         {
