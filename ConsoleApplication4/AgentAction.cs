@@ -42,18 +42,18 @@ namespace ConsoleApplication4
             }
         }
 
-        private GameState _gameState;
-        public GameState gameState
-        {
-            get
-            {
-                return _gameState;
-            }
-            set
-            {
-                _gameState = value;
-            }
-        }
+        //private GameState _gameState;
+        //public GameState gameState
+        //{
+        //    get
+        //    {
+        //        return _gameState;
+        //    }
+        //    set
+        //    {
+        //        _gameState = value;
+        //    }
+        //}
 
         private string _action;
         public string action
@@ -68,18 +68,18 @@ namespace ConsoleApplication4
             }
         }
 
-        public AgentAction(int id, GameState gameState, AgentState currentState, AgentState nextState, string action)
+        public AgentAction(int id, AgentState currentState, AgentState nextState, string action)
         {
             _id = id;
             _currentState = currentState;
             _nextState = nextState;
             _action = action;
-            _gameState = gameState;
+            //_gameState = gameState;
         }
 
         public override string ToString()
         {
-            return "ACT" + _id + "-" + currentState.ToString() + ">" + nextState.ToString() + " :" + _gameState.ToString();
+            return "ACT" + _id + "-" + currentState.ToString() + ">" + nextState.ToString();
         }
     }
 }

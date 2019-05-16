@@ -72,12 +72,12 @@ namespace ConsoleApplication4
 
         public void doRandomAction(GameState gameState, bool logsEnabled)
         {
-            var avaliableActions = _actionsList.FindAll(x => x.currentState == _currentState).FindAll(y => y.gameState == gameState);
+            //var avaliableActions = _actionsList.FindAll(x => x.currentState == _currentState).FindAll(y => y.gameState == gameState);
             var avaliableActionsRewards = new List<AgentReward>();
-            foreach(AgentAction act in avaliableActions)
-            {
-                avaliableActionsRewards.Add(_rewardsList.Find(x => x.action == act));
-            }
+            //foreach(AgentAction act in avaliableActions)
+            //{
+            //    avaliableActionsRewards.Add(_rewardsList.Find(x => x.action == act));
+            //}
 
             avaliableActionsRewards.Sort((x, y) => x.probability.CompareTo(y.probability));
 

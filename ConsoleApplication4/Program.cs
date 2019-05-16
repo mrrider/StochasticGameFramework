@@ -19,7 +19,7 @@ namespace ConsoleApplication4
             game.numberOfTurns = 5;
             game.numberOfStatesPerAgent = 2;
             game.generateDataForAgents();
-            game.doGame();
+            //game.doGame();
           
             Console.ReadLine();
         }

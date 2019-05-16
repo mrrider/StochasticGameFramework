@@ -18,7 +18,7 @@ namespace ConsoleApplication4
         private GameState _currentGameState;
         private List<GameState> _gameStates = new List<GameState>();
         private Random r = new Random();
-
+        public List<WSum> _sums;
         #endregion
 
         #region Constructors
@@ -63,10 +63,7 @@ namespace ConsoleApplication4
 
         private void generateGameStates()
         {
-            var keyValue = new List<KeyValuePair<Agent, AgentState>>();
-
             var firstAgent = _agents.FirstOrDefault();
-
 
             foreach (AgentState currentState in firstAgent.statesList)
             {
@@ -163,15 +160,16 @@ namespace ConsoleApplication4
             foreach (var a in _agents)
             {
                 var actionList = new List<AgentAction>();
-                foreach (GameState gameState in _gameStates) {
-                    foreach (var currState in a.statesList)
+                //foreach (GameState gameState in _gameStates) {
+                foreach (var state in a.statesList)
+                {
+                    foreach (var otherState in a.statesList)
                     {
-                        foreach (var otherState in a.statesList)
-                        {
-                            actionList.Add(new AgentAction(index, gameState, currState, otherState, "A" + a.Id + "ST" + index++));
-                        }
+
+                        actionList.Add(new AgentAction(index, state, otherState, "A" + a.Id + "ST" + index++));
                     }
-                }
+                }    
+                //}
                 a.actionsList = actionList;
             }
         }
@@ -228,6 +226,98 @@ namespace ConsoleApplication4
             }
         }
 
+        private void generateWSums()
+        {
+            _sums = new List<WSum>();
+            var firstAgent = _agents.FirstOrDefault();
+
+            foreach (AgentReward currentReward in firstAgent.rewardsList)
+            {
+                var otherAgents = new List<Agent>();
+                foreach (var a in _agents)
+                {
+                    otherAgents.Add(a);
+                }
+                otherAgents.RemoveAt(0);
+
+                var currentKeyValuePair = new KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>
+                                                    (firstAgent, new KeyValuePair<AgentAction, AgentReward>(currentReward.action, currentReward));
+                    
+                var agentsWSList = new List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>>();
+                agentsWSList.Add(currentKeyValuePair);
+                recourseForWS(otherAgents, agentsWSList);
+            }
+        }
+
+        private void recourseForWS(List<Agent> agentsList, List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>> agentsWSList)
+        {
+
+            if (agentsList.Count == 0)
+                return;
+            if (agentsList.Count == 1) //Last agent in list
+            {
+                foreach (AgentReward lastAgentReward in agentsList.FirstOrDefault().rewardsList)
+                {
+                    var rewardsBeforeAgents = new List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>>();
+                    foreach (var kp in agentsWSList)
+                    {
+                        rewardsBeforeAgents.Add(kp);
+                    }
+
+                    var lstKeyValuePair = new KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>
+                                                    (agentsList.FirstOrDefault(), new KeyValuePair<AgentAction, AgentReward>(lastAgentReward.action, lastAgentReward));
+
+                    rewardsBeforeAgents.Add(lstKeyValuePair);
+                    int nextindex = _sums.Count + 1;
+
+                    int total = 0;
+                    foreach(var ws in rewardsBeforeAgents)
+                    {
+                        total+=ws.Value.Value.reward;
+                    }
+
+                    WSum wsum = new WSum("WSUM" + nextindex, total, rewardsBeforeAgents);
+                    _sums.Add(wsum);
+                }
+            }
+            else
+            {
+                var currentAgent = agentsList.FirstOrDefault();
+                bool secondIteration = false;
+                foreach (var currentReward in currentAgent.rewardsList)
+                {
+                    if (secondIteration)
+                    {
+                        var last = agentsWSList.LastOrDefault();
+                        agentsWSList.Remove(last);
+                    }
+
+                    var currentKeyValuePair = new KeyValuePair<Agent, KeyValuePair<AgentAction, AgentReward>>
+                                                    (currentAgent, new KeyValuePair<AgentAction, AgentReward>(currentReward.action, currentReward));
+
+                    agentsWSList.Add(currentKeyValuePair);
+                    agentsList.Remove(currentAgent);
+                    recourseForWS(agentsList, agentsWSList);
+                    secondIteration = true;
+                }
+            }
+        }
+
+        private void logWSums()
+        {
+            Console.WriteLine("Wsums:");
+            foreach(var sum in _sums)
+            {
+                string text = "\t" + sum.wSum + ": (" ;
+                foreach(var pair in sum.sumList)
+                {
+                    text += "A" + pair.Key.Id + "-" + pair.Value.Key.action + ";";
+                }
+                text += ") = " + sum.totalSum;
+                Console.WriteLine(text);
+            }
+        }
+
         public void generateDataForAgents()
         {
             generateAgentsAndStates();
@@ -241,6 +331,8 @@ namespace ConsoleApplication4
             logAgentsActions();
             generateRandomRewardsForAgents();
             logAgentsRewards();
+            generateWSums();
+            logWSums();
         }
 
         #endregion
