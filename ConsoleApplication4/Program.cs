@@ -21,7 +21,7 @@ namespace ConsoleApplication4
             game.numberOfActionsPerAgent = 2;
             game.generateDataForAgents();
             //game.doGame();
-          
+
             Console.ReadLine();
         }
     }

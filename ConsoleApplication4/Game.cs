@@ -164,7 +164,7 @@ namespace ConsoleApplication4
                 var actionList = new List<AgentAction>();
                 for(int i = 0; i < _numberOfActionsPerAgent; i++)
                 {
-                    int reward = r.Next(-10, 10);
+                    int reward = r.Next(0, 10);
                     actionList.Add(new AgentAction(index,  "A" + a.Id + "-ACT" + index++, reward));
                 }    
                 
@@ -460,24 +460,132 @@ namespace ConsoleApplication4
             Console.WriteLine("TotalProbs = " + counter);
         }
 
+        private void countPerLines()
+        {
+            var result = new List<List<Probs>>();
+            int x = 0;
+            int index = 0;
+            List<Probs> resLoop = new List<Probs>();
+            foreach (var prob in _probs)
+            {
+                if (index == x)
+                {
+                    if(x!=0)
+                        result.Add(resLoop);
+                    resLoop = null;
+                    resLoop = new List<Probs>();
+                    x += 16;
+                }
+
+                resLoop.Add(prob);
+                index++;
+            }
+
+            foreach(var i in result)
+            {
+                
+                double total = 0;
+                foreach (var j in i)
+                {
+                    total += j.probTotal;
+                }
+                Console.WriteLine("Sum q = " + total);
+            }
+
+        }
+
+        private int doSimplex()
+        {
+            var vector = new double[_sums.Count];
+            for (int i = 0; i < _sums.Count; i++)
+            {
+                vector[i] = _sums[i].totalSum;
+            }
+            var matrix = new double[5,_sums.Count];
+
+            for(int i = 0; i < _probs.Count; i++)
+            {
+                if(i >= 0 && i <= 15)
+                {
+                    matrix[0,i] = _probs[i].probTotal;
+                }
+                if (i >= 16 && i <= 31)
+                {
+                    matrix[1,i -16] = _probs[i].probTotal;
+                }
+                if (i >= 32 && i <= 47)
+                {
+                    matrix[2,i-32] =  _probs[i].probTotal;
+                }
+                if (i >= 48)
+                {
+                    matrix[3, i-48] =  _probs[i].probTotal;
+                }
+            }
+
+            for (int i = 0; i < _sums.Count; i++)
+            {
+                matrix[4,i] = 1;
+            }
+            for(int i = 0; i < matrix.GetLength(0); i++)
+            {
+                string res = "";
+                for (int j = 0; j < matrix.GetLength(1); j++)
+                {
+                    res += matrix[i, j] + ";";
+                }
+                Console.WriteLine(res);
+            }
+            var s = new Simplex(
+              vector, matrix,
+              //new[,] {
+              //        {0.1, 0.5, 0.333333, 1},
+              //        {30, 15, 19, 12},
+              //        {1000, 6000, 4100, 9100},
+              //        {50, 20, 21, 10},
+              //        {4, 6, 19, 30}
+              //            }, 
+              //vector2
+            new double[] { 0,0,0,0,1 }
+            );
+
+            var answer = s.maximize();
+            //var res = _sums[int.Parse(answer.Item1.ToString())];
+            Console.WriteLine(answer.Item1);
+            Console.WriteLine(string.Join(", ", answer.Item2));
+
+            return int.Parse(answer.Item1.ToString());
+        }
+
         public void generateDataForAgents()
         {
-            generateAgentsAndStates();
-            logAgentsAndStates();
-            //generateGameStates();
-            //logGameStates();
-            //_currentGameState = getRandomStartGameState();
-            generateStartStateForAgents();
-            logAgentsStates();
-            generateActionsForAgent();
-            logAgentsActions();
-            generateRandomProbsForAgents();
-            logAgentsProbs();
-            //GenerateAgentsRewards();
-            generateWSums();
-            logWSums();
-            countProbs();
-            logProbs();
+            
+            int i = 0;
+            do
+            {
+                _agents = null;
+                _agents = new List<Agent>();
+                _sums = null;
+                _probs = null;
+                generateAgentsAndStates();
+                logAgentsAndStates();
+                //generateGameStates();
+                //logGameStates();
+                //_currentGameState = getRandomStartGameState();
+                generateStartStateForAgents();
+                logAgentsStates();
+                generateActionsForAgent();
+                logAgentsActions();
+                generateRandomProbsForAgents();
+                logAgentsProbs();
+                //GenerateAgentsRewards();
+                generateWSums();
+                logWSums();
+                countProbs();
+                logProbs();
+                //countPerLines();
+                i = doSimplex();
+            } while (i == 0);
         }
 
         #endregion
