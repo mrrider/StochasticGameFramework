@@ -46,9 +46,10 @@
     <Compile Include="Agent.cs" />
     <Compile Include="AgentAction.cs" />
     <Compile Include="AgentProb.cs" />
+    <Compile Include="CoalitionState.cs" />
     <Compile Include="AgentState.cs" />
+    <Compile Include="Coalition.cs" />
     <Compile Include="Game.cs" />
-    <Compile Include="GameState.cs" />
     <Compile Include="Probs.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

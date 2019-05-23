@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApplication4", "ConsoleApplication4\ConsoleApplication4.csproj", "{121DFEB5-532A-4D8F-9CE7-3FB219653AB7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StochasticGameFramework", "ConsoleApplication4\StochasticGameFramework.csproj", "{121DFEB5-532A-4D8F-9CE7-3FB219653AB7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

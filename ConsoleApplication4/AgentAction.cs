@@ -1,5 +1,5 @@
 ﻿
-namespace ConsoleApplication4
+namespace StochasticGameFramework
 {
     public class AgentAction
     {

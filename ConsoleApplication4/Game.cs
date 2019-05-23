@@ -4,262 +4,177 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleApplication4
+namespace StochasticGameFramework
 {
     public class Game
     {
         #region PrivateVariables
 
-        private List<Agent> _agents;
+        public List<Coalition> _coalitions;
+        
         private bool _logsEnabled;
-        private int _numberOfAgents;
+        private int _numberOfAgentsPerCoalition;
         private int _numberOfTurns;
         private int _numberOfStatesPerAgent;
         private int _numberOfActionsPerAgent;
-        //private GameState _currentGameState;
-        //private List<GameState> _gameStates = new List<GameState>();
+        private int _numberOfCoalitions;
         private Random r = new Random();
         public List<WSum> _sums;
         public List<Probs> _probs;
-        #endregion
-
-        #region Constructors
-        public Game()
-        {
-            _agents = new List<Agent>();
-        }
 
         #endregion
 
         #region DataGeneration
-        private void generateAgentsAndStates()
+
+        private void generateCoalitions()
         {
-            int index = 0;
-            for (int i = 0; i < _numberOfAgents; i++)
+            _coalitions = new List<Coalition>();
+            for (int i = 1; i <= numberOfCoalitions; i++)
             {
-                Agent agent = new Agent(i);
+                Coalition c = new Coalition(i, "C"+i);
+                _coalitions.Add(c);
+            }
+        }
+
+        private void generateDataForCoalitions()
+        {
+            foreach(var coalition in _coalitions)
+            {
+                coalition.coalitionMembers = generateAgentsAndStates(coalition.id);
+                foreach(var agent in coalition.coalitionMembers)
+                {
+                    agent._currentState = generateStartStateForAgent(agent);
+                    agent.actionsList = generateActionsForAgent(agent);
+                }
+            }
+        }
+
+        private List<Agent> generateAgentsAndStates(int coalitionId)
+        {
+            List<Agent> result = new List<Agent>();
+            for (int i = 1; i <= _numberOfAgentsPerCoalition; i++)
+            {
+                Agent agent = new Agent(int.Parse(coalitionId.ToString() +  i.ToString()));
                 List<AgentState> agentStates = new List<AgentState>();
                 for (int j = 0; j < _numberOfStatesPerAgent; j++)
                 {
-                    AgentState state = new AgentState(index, "A" + i + "-S" + index++);
+                    var stateId = int.Parse(agent.Id.ToString() + j.ToString());
+                    AgentState state = new AgentState(stateId, "A" + agent.Id + "-S" + stateId);
                     agentStates.Add(state);
                 }
                 agent.statesList = agentStates;
-                _agents.Add(agent);
+                result.Add(agent);
             }
-
+            return result;
         }
 
-        private void logAgentsAndStates()
+        private AgentState generateStartStateForAgent(Agent agent)
         {
-            if (_logsEnabled)
+            Random rnd = new Random();
+            int r = rnd.Next(agent.statesList.Count);
+            return agent.statesList[r];
+        }
+       
+        private List<AgentAction> generateActionsForAgent(Agent agent)
+        {
+            var actionList = new List<AgentAction>();
+            for(int i = 0; i < _numberOfActionsPerAgent; i++)
             {
-                foreach (Agent agent in _agents)
+                int reward = r.Next(-10, 10);
+                int actionId = int.Parse(agent.Id.ToString() + 00 + i.ToString());
+                actionList.Add(new AgentAction(actionId,  "A" + agent.Id + "-ACT" + actionId, reward));
+            }    
+            return actionList;
+        }
+        
+        public void generateData()
+        {
+            generateCoalitions();
+            generateDataForCoalitions();
+            logInputData();
+        }
+        #endregion
+
+        #region DataPerStep
+        private List<AgentProb> generateRandomProbsForAgent(Agent agent)
+        {
+            var probList = new List<AgentProb>();
+            double probLeft = 1;
+
+            var actionCount = agent.actionsList.Count * agent.statesList.Count;
+            var lastAction = agent.actionsList.LastOrDefault();
+            var lastState = agent.statesList.LastOrDefault();
+
+            foreach (var action in agent.actionsList)
+            {
+                foreach (var state in agent.statesList)
                 {
-                    Console.WriteLine(agent.ToString() + " has states: ");
-                    foreach (AgentState state in agent.statesList)
-                        Console.WriteLine("\t" + agent.ToString() + state.ToString());
-                }
-            }
-        }
-
-        //private void generateGameStates()
-        //{
-        //    var firstAgent = _agents.FirstOrDefault();
-
-        //    foreach (AgentState currentState in firstAgent.statesList)
-        //    {
-        //        var otherAgents = new List<Agent>();
-        //        foreach (var a in _agents)
-        //        {
-        //            otherAgents.Add(a);
-        //        }
-        //        otherAgents.RemoveAt(0);
-        //        var currentKeyValuePair = new KeyValuePair<Agent, AgentState>(firstAgent, currentState);
-        //        var agentsStatesList = new List<KeyValuePair<Agent, AgentState>>();
-        //        agentsStatesList.Add(currentKeyValuePair);
-        //        recourse(otherAgents, agentsStatesList);
-        //    }
-        //}
-
-        //private void recourse(List<Agent> agentsList, List<KeyValuePair<Agent, AgentState>> agentsStatesList)
-        //{
-        //    if (agentsList.Count == 0)
-        //        return;
-        //    if (agentsList.Count == 1) //Last agent in list
-        //    {
-        //        foreach (AgentState lastAgentState in agentsList.FirstOrDefault().statesList)
-        //        {
-        //            List<KeyValuePair<Agent, AgentState>> statesBeforeAgents = new List<KeyValuePair<Agent, AgentState>>();
-        //            foreach (KeyValuePair<Agent, AgentState> kp in agentsStatesList)
-        //            {
-        //                statesBeforeAgents.Add(kp);
-        //            }
-        //            statesBeforeAgents.Add(new KeyValuePair<Agent, AgentState>(agentsList.FirstOrDefault(), lastAgentState));
-        //            int nextState = _gameStates.Count + 1;
-        //            GameState gameState = new GameState(statesBeforeAgents, "GST" + nextState);
-        //            _gameStates.Add(gameState);
-        //        }
-        //    } else
-        //    {
-        //        var currentAgent = agentsList.FirstOrDefault();
-        //        bool secondIteration = false;
-        //        foreach (AgentState currentState in currentAgent.statesList)
-        //        {
-        //            if (secondIteration)
-        //            {
-        //                var last = agentsStatesList.LastOrDefault();
-        //                agentsStatesList.Remove(last);
-        //            }
-        //            var currentKeyValuePair = new KeyValuePair<Agent, AgentState>(currentAgent, currentState);
-        //            agentsStatesList.Add(currentKeyValuePair);
-        //            agentsList.Remove(currentAgent);
-        //            recourse(agentsList, agentsStatesList);
-        //            secondIteration = true;
-        //        }
-        //    }
-        //}
-
-        //private void logGameStates()
-        //{
-        //    if (_logsEnabled)
-        //    {
-
-        //        foreach (GameState gameState in _gameStates)
-        //        {
-        //            Console.WriteLine(gameState.ToString());
-        //        }
-        //    }
-        //}
-
-        //public GameState getRandomStartGameState()
-        //{
-        //    Random random = new Random();
-        //    var state = _gameStates[random.Next(_gameStates.Count)];
-        //    Console.WriteLine("Game Start State is " + state.gameState);
-        //    return state;
-        //}
-
-        private void generateStartStateForAgents()
-        {
-            foreach (Agent a in _agents)
-            {
-                a._currentState = a.statesList[0];
-            }
-        }
-
-        private void logAgentsStates()
-        {
-            foreach (Agent a in _agents)
-            {
-                Console.WriteLine("Start state for Agent " + a.Id + " is " + a._currentState);
-            }
-        }
-
-        private void generateActionsForAgent()
-        {
-            int index = 0;
-            foreach (var a in _agents)
-            {
-                var actionList = new List<AgentAction>();
-                for(int i = 0; i < _numberOfActionsPerAgent; i++)
-                {
-                    int reward = r.Next(0, 10);
-                    actionList.Add(new AgentAction(index,  "A" + a.Id + "-ACT" + index++, reward));
-                }    
-                
-                a.actionsList = actionList;
-            }
-        }
-
-        private void logAgentsActions()
-        {
-            if (_logsEnabled)
-            {
-                foreach (Agent agent in _agents)
-                {
-                    Console.WriteLine(agent.ToString() + " has actions: ");
-                    foreach (AgentAction action in agent.actionsList)
-                        Console.WriteLine("\t" + action.ToString());
-                }
-            }
-        }
-
-        private void generateRandomProbsForAgents()
-        {
-            foreach (var a in _agents)
-            {
-                var probList = new List<AgentProb>();
-
-                double probLeft = 1;
-
-                var actionCount = a.actionsList.Count * a.statesList.Count;
-                var lastAction = a.actionsList.LastOrDefault();
-                var lastState = a.statesList.LastOrDefault();
-
-                foreach (var action in a.actionsList)
-                {
-                    foreach(var state in a.statesList)
+                    double prob = 0;
+                    if (action.Equals(lastAction) && state.Equals(lastState))
                     {
-                        double prob = 0;
-                        if (action.Equals(lastAction) && state.Equals(lastState))
-                        {
-                            prob = probLeft;
-                        }
-                        else
-                        {
-                            prob = getRandomNumber(0, probLeft / actionCount);
-                        }
-                        actionCount--;
-                        prob = Math.Round(prob, 2);
-                        AgentProb pr = new AgentProb(action, state, prob);
-                        probList.Add(pr);
-                        probLeft -= prob;
+                        prob = probLeft;
                     }
+                    else
+                    {
+                        prob = getRandomNumber(0, probLeft / actionCount);
+                    }
+                    actionCount--;
+                    prob = Math.Round(prob, 2);
+                    AgentProb pr = new AgentProb(action, state, prob);
+                    probList.Add(pr);
+                    probLeft -= prob;
                 }
-                a.probList = probList;
             }
+            return probList;
         }
-
-        private void logAgentsProbs()
+        
+        private void generateDataForStep()
         {
-            if (_logsEnabled)
+            foreach (var coalition in _coalitions)
             {
-                foreach (Agent agent in _agents)
+                foreach (var agent in coalition.coalitionMembers)
                 {
-                    Console.WriteLine(agent.ToString() + " has probs: ");
-                    foreach (AgentProb prob in agent.probList)
-                        Console.WriteLine("\t" + prob.ToString());
+                    agent.probList = generateRandomProbsForAgent(agent);
                 }
             }
         }
 
-        private void generateWSums()
+        private void countDataForSimplex()
+        {
+            _sums = null;
+            _probs = null;
+            var agents = generateWSums();
+            findProbs(agents);
+        }
+
+        private List<Agent> generateWSums()
         {
             _sums = new List<WSum>();
-            var firstAgent = _agents.FirstOrDefault();
+            List<Agent> agents = new List<Agent>();
+            foreach (var c in _coalitions)
+                foreach (var a in c.coalitionMembers)
+                    agents.Add(a);
+
+            var firstAgent = agents.FirstOrDefault();
 
             foreach (AgentState currentState in firstAgent.statesList)
-            {
-
                 foreach(AgentAction currentAction in firstAgent.actionsList)
                 {
                     var otherAgents = new List<Agent>();
-                    foreach (var a in _agents)
-                    {
+                    foreach (var a in agents)
                         otherAgents.Add(a);
-                    }
+
                     otherAgents.RemoveAt(0);
                     var currentKeyValuePair = new KeyValuePair<Agent, KeyValuePair<AgentAction, AgentState>>
                                                     (firstAgent, new KeyValuePair<AgentAction, AgentState>(currentAction, currentState));
                     var agentsWSList = new List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentState>>>();
                     agentsWSList.Add(currentKeyValuePair);
-                    recourseForWS(otherAgents, agentsWSList);
+                    wSumsRecursion(otherAgents, agentsWSList);
                 }
-            }
+            return agents;
         }
 
-        private void recourseForWS(List<Agent> agentsList, List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentState>>> agentsWSList)
+        private void wSumsRecursion(List<Agent> agentsList, List<KeyValuePair<Agent, KeyValuePair<AgentAction, AgentState>>> agentsWSList)
         {
             if (agentsList.Count == 0)
                 return;
@@ -295,12 +210,14 @@ namespace ConsoleApplication4
             else
             {
                 var currentAgent = agentsList.FirstOrDefault();
-                bool secondIteration = false;
+
+                bool secondStateIter = false;
                 foreach (var currentState in currentAgent.statesList)
                 {
-                    foreach(var currentAction in currentAgent.actionsList)
+                    bool secondIteration = false;
+                    foreach (var currentAction in currentAgent.actionsList)
                     {
-                        if (secondIteration)
+                        if (secondIteration || secondStateIter)
                         {
                             var last = agentsWSList.LastOrDefault();
                             agentsWSList.Remove(last);
@@ -311,33 +228,19 @@ namespace ConsoleApplication4
 
                         agentsWSList.Add(currentKeyValuePair);
                         agentsList.Remove(currentAgent);
-                        recourseForWS(agentsList, agentsWSList);
+                        wSumsRecursion(agentsList, agentsWSList);
                         secondIteration = true;
                     }
+                    secondStateIter = true;
                 }
             }
         }
 
-        private void logWSums()
-        {
-            Console.WriteLine("Wsums:");
-            foreach (var sum in _sums)
-            {
-                string text = "\t" + sum.wSum + ": (";
-                foreach (var pair in sum.sumList)
-                {
-                    text += "A" + pair.Key.Id + "-" + pair.Value.Key.action + ";";
-                }
-                text += ") = " + sum.totalSum;
-                Console.WriteLine(text);
-            }
-        }
-
-        private void countProbs()
+        private void findProbs(List<Agent> agents)
         {
             _probs = new List<Probs>();
 
-            var firstAgent = _agents.FirstOrDefault();
+            var firstAgent = agents.FirstOrDefault();
 
             foreach (AgentState currentState in firstAgent.statesList)
             {
@@ -346,7 +249,7 @@ namespace ConsoleApplication4
                     foreach (AgentState nextState in firstAgent.statesList)
                     {
                         var otherAgents = new List<Agent>();
-                        foreach (var a in _agents)
+                        foreach (var a in agents)
                         {
                             otherAgents.Add(a);
                         }
@@ -358,13 +261,13 @@ namespace ConsoleApplication4
                         var agentsPRList = new List<KeyValuePair<Agent, TransferPair>>();
 
                         agentsPRList.Add(currentKeyValuePair);
-                        recourseForWS(otherAgents, agentsPRList);
+                        probsRecursion(otherAgents, agentsPRList);
                     }
                 }
             }
         }
 
-        private void recourseForWS(List<Agent> agentsList, List<KeyValuePair<Agent, TransferPair>> agentsPRList)
+        private void probsRecursion(List<Agent> agentsList, List<KeyValuePair<Agent, TransferPair>> agentsPRList)
         {
             if (agentsList.Count == 0)
                 return;
@@ -434,7 +337,7 @@ namespace ConsoleApplication4
 
                             agentsPRList.Add(lstKeyValuePair);
                             agentsList.Remove(currentAgent);
-                            recourseForWS(agentsList, agentsPRList);
+                            probsRecursion(agentsList, agentsPRList);
                             secondIteration = true;
                         }
                     }
@@ -442,208 +345,141 @@ namespace ConsoleApplication4
             }
         }
 
-        private void logProbs()
-        {
-            double counter = 0;
-            Console.WriteLine("Probs:");
-            foreach (var prob in _probs)
-            {
-                string text = "\t" + prob.prob + ": (";
-                foreach (var pair in prob.agentsVector)
-                {
-                    text += "A" + pair.Key.Id + "-" + pair.Value.stateBefore + "->" + pair.Value.action + "->" + pair.Value.stateAfter + ";";
-                }
-                text += ") = " + prob.probTotal;
-                counter += prob.probTotal;
-                Console.WriteLine(text);
-            }
-            Console.WriteLine("TotalProbs = " + counter);
-        }
+        #endregion
 
-        private void countPerLines()
-        {
-            var result = new List<List<Probs>>();
-            int x = 0;
-            int index = 0;
-            List<Probs> resLoop = new List<Probs>();
-            foreach (var prob in _probs)
-            {
-                if (index == x)
-                {
-                    if(x!=0)
-                        result.Add(resLoop);
-                    resLoop = null;
-                    resLoop = new List<Probs>();
-                    x += 16;
-                }
-
-                resLoop.Add(prob);
-                index++;
-            }
-
-            foreach(var i in result)
-            {
-                
-                double total = 0;
-                foreach (var j in i)
-                {
-                    total += j.probTotal;
-                }
-                Console.WriteLine("Sum q = " + total);
-            }
-
-        }
-
-        private int doSimplex()
+        private WSum doSimplex()
         {
             var vector = new double[_sums.Count];
             for (int i = 0; i < _sums.Count; i++)
             {
                 vector[i] = _sums[i].totalSum;
             }
-            var matrix = new double[5,_sums.Count];
 
-            for(int i = 0; i < _probs.Count; i++)
+            int matrixHeight = (_probs.Count / _sums.Count) + 1;
+            var matrix = new double[matrixHeight, _sums.Count];
+
+            int currentRow = 0;
+            int currentCol = 0;
+            for (int i = 0; i < _probs.Count; i++)
             {
-                if(i >= 0 && i <= 15)
+                matrix[currentRow, currentCol] =  _probs[i].probTotal;
+                if(currentCol == _sums.Count-1)
                 {
-                    matrix[0,i] = _probs[i].probTotal;
-                }
-                if (i >= 16 && i <= 31)
-                {
-                    matrix[1,i -16] = _probs[i].probTotal;
-                }
-                if (i >= 32 && i <= 47)
-                {
-                    matrix[2,i-32] =  _probs[i].probTotal;
-                }
-                if (i >= 48)
-                {
-                    matrix[3, i-48] =  _probs[i].probTotal;
-                }
+                    currentRow++;
+                    currentCol = 0;
+                }else
+                    currentCol++;
             }
 
             for (int i = 0; i < _sums.Count; i++)
             {
-                matrix[4,i] = 1;
+                matrix[matrixHeight-1, i] = 1;
             }
-            for(int i = 0; i < matrix.GetLength(0); i++)
+
+            var resVector = new double[matrixHeight];
+            for(int i = 0; i < matrixHeight; i++)
             {
-                string res = "";
-                for (int j = 0; j < matrix.GetLength(1); j++)
-                {
-                    res += matrix[i, j] + ";";
-                }
-                Console.WriteLine(res);
+                if (i == matrixHeight - 1)
+                    resVector[i] = 1;
+                else
+                    resVector[i] = 0;
             }
-            var s = new Simplex(
-              vector, matrix,
-              //new[,] {
-              //        {0.1, 0.5, 0.333333, 1},
-              //        {30, 15, 19, 12},
-              //        {1000, 6000, 4100, 9100},
-              //        {50, 20, 21, 10},
-              //        {4, 6, 19, 30}
-              //            }, 
-              //vector2
-            new double[] { 0,0,0,0,1 }
-            );
+
+            var s = new Simplex(vector, matrix, resVector);
 
             var answer = s.maximize();
-            //var res = _sums[int.Parse(answer.Item1.ToString())];
-            Console.WriteLine(answer.Item1);
-            Console.WriteLine(string.Join(", ", answer.Item2));
+            //temp
+            //if (answer.Item1 == 0)
+            //    return null;
+            //temp
+            var wsum = analyzeRes(answer);
 
-            return int.Parse(answer.Item1.ToString());
+            return wsum;
         }
 
-        public void generateDataForAgents()
+        private WSum analyzeRes(Tuple<double, double[]> answer)
         {
-            
-            int i = 0;
-            do
-            {
-                _agents = null;
-                _agents = new List<Agent>();
-                _sums = null;
-                _probs = null;
-                generateAgentsAndStates();
-                logAgentsAndStates();
-                //generateGameStates();
-                //logGameStates();
-                //_currentGameState = getRandomStartGameState();
-                generateStartStateForAgents();
-                logAgentsStates();
-                generateActionsForAgent();
-                logAgentsActions();
-                generateRandomProbsForAgents();
-                logAgentsProbs();
-                //GenerateAgentsRewards();
-                generateWSums();
-                logWSums();
-                countProbs();
-                logProbs();
-                //countPerLines();
-                i = doSimplex();
-            } while (i == 0);
+            var resSums = new double[_sums.Count];
+            for(int i = 0; i < _sums.Count; i++)
+                resSums[i] = answer.Item2[i];
+
+            var index = Array.FindIndex(resSums, x => x == 1);
+            if (index == -1)
+                index = 3;
+            var result = _sums[index];
+
+            return result;
         }
 
-        #endregion
+        public void playGame()
+        {
+            for (int iteration = 1; iteration <= _numberOfTurns; iteration++)
+            {
+                Console.WriteLine("Step number " + iteration);
+                int index = 0;
+                WSum optimal = null;
+                bool error = false;
+                bool loop = true;
+                do
+                {
+                    Console.WriteLine("\t Generation " + ++index);
+                    generateDataForStep();
+                    countDataForSimplex();
+                    logWSums();
+                    optimal = doSimplex();
+                    if (optimal != null)
+                        error = moveGameState(optimal);
+                    loop = optimal == null || !error;
+                } while (loop);
+            }
+        }
 
-        //public void doGame()
-        //{
-        //    for (int iteration = 1; iteration <= _numberOfTurns; iteration++)
-        //    {
-        //        Console.WriteLine("Turn " + iteration);
-        //        foreach (Agent agent in _agents)
-        //        {
-        //            string res = "\t Agent A" + agent.Id + "is in state " + agent._currentState.ToString();
-        //            agent.doRandomAction(_currentGameState, _logsEnabled);
-        //            res += "; new state " + agent._currentState.ToString() + " total reward is " + agent.totalReward;
-        //            Console.WriteLine(res);
-        //        }
-        //        if (!moveGameState())
-        //            break;
-        //    }
-        //}
+        public bool moveGameState(WSum optimal)
+        {
+            var agentsListPair = optimal.sumList;
+            var prob = _probs;
 
-        //public bool moveGameState()
-        //{
-        //    var agentStates = new List<KeyValuePair<Agent, AgentState>>();
-        //    foreach(Agent agent in _agents)
-        //    {
-        //        agentStates.Add(new KeyValuePair<Agent, AgentState>(agent, agent._currentState));
-        //    }
-        //    var found = false;
-        //    foreach (GameState gs in _gameStates)
-        //    {
-        //        found = gs.agentsStates.All(agentStates.Contains) && gs.agentsStates.Count == agentStates.Count;
-        //        if (found)
-        //        {
-        //            _currentGameState = gs;
-        //            Console.WriteLine("New Game State " + _currentGameState);
-        //            break;
-        //        }
-        //    }
-        //    if (!found)
-        //    {
-        //        Console.WriteLine("ERROR");
-        //    }
-        //    return found;
-        //}
+            for (int i = 0; i < agentsListPair.Count; i++)
+            {
+                var element = (from sublist in prob
+                                       from item in sublist.agentsVector
+                                       where item.Key.Id == agentsListPair[i].Key.Id
+                                            && item.Value.action.id == agentsListPair[i].Value.Key.id
+                                            && item.Value.stateBefore.id == agentsListPair[i].Value.Value.id
+                                       select sublist).ToList();
+                prob = null;
+                prob = element;
+            }
+
+            double sum = prob.Sum(x => x.probTotal);
+            double probability = getRandomNumber(0, sum);
+            double cumulative = 0.0;
+            Probs result = null;
+            foreach (var strat in prob)
+            {
+                cumulative += strat.probTotal;
+                if (probability < cumulative)
+                {
+                    result = strat;
+                    break;
+                }
+            }
+            if (result == null)
+                return false;
+            foreach (var coalition in _coalitions)
+            {
+                foreach (var agent in coalition.coalitionMembers)
+                {
+                    var agentActionStatePair = agentsListPair.Find(x => x.Key.Id == agent.Id).Value;
+                    agent.totalReward += agentActionStatePair.Key.reward;
+                    agent._currentState = result.agentsVector.Find(x => x.Key.Id == agent.Id).Value.stateAfter;
+                }
+            }
+
+            return true;
+        }
 
         #region Properties
-        public List<Agent> agents
-        {
-            get
-            {
-                return _agents;
-            }
-            set
-            {
-                _agents = value;
-            }
-        }
 
         public bool logsEnabled
         {
@@ -657,15 +493,27 @@ namespace ConsoleApplication4
             }
         }
 
-        public int numberOfAgents
+        public int numberOfCoalitions
         {
             get
             {
-                return _numberOfAgents;
+                return _numberOfCoalitions;
             }
             set
             {
-                _numberOfAgents = value;
+                _numberOfCoalitions = value;
+            }
+        }
+
+        public int numberOfAgentsPerCoalition
+        {
+            get
+            {
+                return _numberOfAgentsPerCoalition;
+            }
+            set
+            {
+                _numberOfAgentsPerCoalition = value;
             }
         }
 
@@ -705,18 +553,6 @@ namespace ConsoleApplication4
             }
         }
 
-        //public List<GameState> gameStates
-        //{
-        //    get
-        //    {
-        //        return _gameStates;
-        //    }
-        //    set
-        //    {
-        //        _gameStates = value;
-        //    }
-        //}
-
         #endregion
 
         #region Utils
@@ -727,5 +563,112 @@ namespace ConsoleApplication4
         }
 
         #endregion
+
+        #region Logs
+
+        private void logInputData()
+        {
+            if (_logsEnabled)
+            {
+                Console.WriteLine("Input Data:");
+                foreach (var c in _coalitions)
+                {
+                    Console.WriteLine("\t Coalition " + c.id + "; " + c.CoalitionName);
+                    foreach (var a in c.coalitionMembers)
+                    {
+                        Console.WriteLine("\t \t Agent " + a.Id + "; Start state " + a._currentState);
+                        Console.WriteLine("\t \t \t States:");
+                        foreach (var st in a.statesList)
+                        {
+                            Console.WriteLine("\t \t \t \t " + st.id + "; " + st.state);
+                        }
+
+                        Console.WriteLine("\t \t \t Actions:");
+                        foreach (var st in a.actionsList)
+                        {
+                            Console.WriteLine("\t \t \t \t " + st.id + "; " + st.action + "; reward = " + st.reward);
+                        }
+
+                        //Console.WriteLine("\t \t \t Probs:");
+                        //foreach (var st in a.probList)
+                        //{
+                        //    Console.WriteLine("\t \t \t \t " + st.action + " -> " + st.nextState + "; prob = " + st.probability);
+                        //}
+                    }
+                }
+            }
+        }
+
+        //private void logAgentsActions()
+        //{
+        //    if (_logsEnabled)
+        //    {
+        //        foreach (Agent agent in _agents)
+        //        {
+        //            Console.WriteLine(agent.ToString() + " has actions: ");
+        //            foreach (AgentAction action in agent.actionsList)
+        //                Console.WriteLine("\t" + action.ToString());
+        //        }
+        //    }
+        //}
+
+        //private void logAgentsProbs()
+        //{
+        //    if (_logsEnabled)
+        //    {
+        //        foreach (Agent agent in _agents)
+        //        {
+        //            Console.WriteLine(agent.ToString() + " has probs: ");
+        //            foreach (AgentProb prob in agent.probList)
+        //                Console.WriteLine("\t" + prob.ToString());
+        //        }
+        //    }
+        //}
+
+        private void logWSums()
+        {
+            Console.WriteLine("Wsums:");
+            foreach (var sum in _sums)
+            {
+                string text = "\t" + sum.wSum + ": (";
+                foreach (var pair in sum.sumList)
+                {
+                    text += "A" + pair.Key.Id + "-" + pair.Value.Key.action + ";";
+                }
+                text += ") = " + sum.totalSum;
+                Console.WriteLine(text);
+            }
+        }
+
+        private void logProbs()
+        {
+            double counter = 0;
+            Console.WriteLine("Probs:");
+            foreach (var prob in _probs)
+            {
+                string text = "\t" + prob.prob + ": (";
+                foreach (var pair in prob.agentsVector)
+                {
+                    text += "A" + pair.Key.Id + "-" + pair.Value.stateBefore + "->" + pair.Value.action + "->" + pair.Value.stateAfter + ";";
+                }
+                text += ") = " + prob.probTotal;
+                counter += prob.probTotal;
+                Console.WriteLine(text);
+            }
+            Console.WriteLine("TotalProbs = " + counter);
+        }
+
+        #endregion
     }
 }
+
+
+ //for (int i = 0; i<matrix.GetLength(0); i++)
+ //           {
+ //               string res = "";
+ //               for (int j = 0; j<matrix.GetLength(1); j++)
+ //               {
+ //                   res += matrix[i, j] + ";";
+ //               }
+ //               Console.WriteLine(res);
+ //           }

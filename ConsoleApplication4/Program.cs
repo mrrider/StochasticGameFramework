@@ -1,12 +1,12 @@
-﻿using ConsoleApplication4;
+﻿using StochasticGameFramework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static ConsoleApplication4.Game;
+using static StochasticGameFramework.Game;
 
-namespace ConsoleApplication4
+namespace StochasticGameFramework
 {
     class Program
     {
@@ -15,12 +15,14 @@ namespace ConsoleApplication4
             Game game = new Game();
 
             game.logsEnabled = true;
-            game.numberOfAgents = 2;
+            game.numberOfAgentsPerCoalition = 2;
+            game.numberOfCoalitions = 2;
             game.numberOfTurns = 5;
             game.numberOfStatesPerAgent = 2;
             game.numberOfActionsPerAgent = 2;
-            game.generateDataForAgents();
-            //game.doGame();
+            game.generateData();
+            game.playGame();
+
 
             Console.ReadLine();
         }

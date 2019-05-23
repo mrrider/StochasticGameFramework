@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static ConsoleApplication4.Game;
+using static StochasticGameFramework.Game;
 
-namespace ConsoleApplication4
+namespace StochasticGameFramework
 {
     public class Agent
     {

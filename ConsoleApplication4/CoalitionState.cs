@@ -1,10 +1,12 @@
 ﻿
+using System.Collections.Generic;
+
 namespace StochasticGameFramework
 {
-    public class AgentState
+    public class CoalitionState
     {
         private int _id;
-        public int id
+        public int Id
         {
             get
             {
@@ -17,7 +19,7 @@ namespace StochasticGameFramework
         }
 
         private string _state;
-        public string state
+        public string State
         {
             get
             {
@@ -29,10 +31,25 @@ namespace StochasticGameFramework
             }
         }
 
-        public AgentState(int id, string state)
+        private List<AgentState> _agentsStates;
+
+        public List<AgentState> AgentsStates
+        {
+            get
+            {
+                return _agentsStates;
+            }
+            set
+            {
+                _agentsStates = value;
+            }
+        }
+
+        public CoalitionState(int id, string state, List<AgentState> list)
         {
             _id = id;
             _state = state;
+            _agentsStates = list;
         }
 
         public override string ToString()
